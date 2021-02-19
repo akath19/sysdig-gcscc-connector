@@ -202,3 +202,17 @@ kubectl create -f deployment.yaml
 And our server will be listening to alerts in the following URL:
 
 http://sysdig-gcscc-connector.default.svc.cluster.local:8080/events
+
+If you're running the connector on GKE and have workload identity enabled, you can remove the following sections from the `deployment.yaml` file:
+
+* In the secret object:
+`security_service_account_info:`  
+
+* In the deployment object:
+```- name: SECURITY_SERVICE_ACCOUNT_INFO
+    valueFrom:
+      secretKeyRef:
+        name: sysdig-gcscc-connector
+        key: security_service_account_info```
+
+Don't forget to attach a service account to the deployment that has the proper permissions set

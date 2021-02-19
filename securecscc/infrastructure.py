@@ -29,12 +29,18 @@ class GoogleCloudClient(object):
     @property
     @lru_cache(maxsize=1)
     def _security_client(self):
-        credentials = service_account.Credentials \
-            .from_service_account_info(self._credentials.security_service_account_info())
-        scoped_credentials = credentials.with_scopes(self._CREDENTIAL_SCOPES)
+         if self._credentials.security_service_account_info() is None:
+            return \
+                securitycenter.SecurityCenterClient()
+        else:
+            credentials = service_account.Credentials \
+                .from_service_account_info(self._credentials.security_service_account_info())
+            scoped_credentials = credentials.with_scopes(
+                self._CREDENTIAL_SCOPES)
 
-        return \
-            securitycenter.SecurityCenterClient(credentials=scoped_credentials)
+            return \
+                securitycenter.SecurityCenterClient(
+                    credentials=scoped_credentials)
 
     def get_resource_name_from_hostname(self, organization, hostname):
         response = self._security_client.list_assets(
@@ -63,7 +69,8 @@ class SysdigSecureClient(object):
         self._credentials = credentials
 
     def events_happened_on_last(self, duration):
-        result = self._sysdig_secure_client.get_policy_events_duration(duration)
+        result = self._sysdig_secure_client.get_policy_events_duration(
+            duration)
 
         return result[1]['data']['policyEvents']
 
